@@ -344,5 +344,69 @@
       "height": 900,
       "kind": "render"
     }
+  ],
+  "P017": [
+    {
+      "src": "/media/p017-render-1.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    },
+    {
+      "src": "/media/p017-render-2.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    },
+    {
+      "src": "/media/p017-render-3.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    },
+    {
+      "src": "/media/p017-render-4.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    },
+    {
+      "src": "/media/p017-render-5.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    }
+  ],
+  "P024": [
+    {
+      "src": "/media/p024-render-1.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    },
+    {
+      "src": "/media/p024-render-2.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    },
+    {
+      "src": "/media/p024-render-3.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    },
+    {
+      "src": "/media/p024-render-4.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    },
+    {
+      "src": "/media/p024-render-5.webp",
+      "width": 1600,
+      "height": 900,
+      "kind": "render"
+    }
   ]
 }
