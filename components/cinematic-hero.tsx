@@ -40,7 +40,7 @@ export function CinematicHero({ locale }: { locale: Locale }) {
           ScrollTrigger.refresh();queue();
         };
         film.addEventListener('loadeddata',ready);film.addEventListener('seeked',queue);
-        fetch('/media/videos/p012-scrub.mp4',{signal:request.signal}).then(response=>{if(!response.ok)throw new Error('Film unavailable');return response.blob();}).then(blob=>{if(cancelled||request.signal.aborted)return;objectUrl=URL.createObjectURL(blob);film.src=objectUrl;film.preload='auto';film.load();}).catch(()=>{if(!cancelled&&!request.signal.aborted)setMode('error');});
+        fetch('/media/videos/p012-scrub-web.mp4',{signal:request.signal}).then(response=>{if(!response.ok)throw new Error('Film unavailable');return response.blob();}).then(blob=>{if(cancelled||request.signal.aborted)return;objectUrl=URL.createObjectURL(blob);film.src=objectUrl;film.preload='auto';film.load();}).catch(()=>{if(!cancelled&&!request.signal.aborted)setMode('error');});
         return ()=>{request.abort();if(objectUrl)URL.revokeObjectURL(objectUrl);timeline?.scrollTrigger?.kill();timeline?.kill();film.removeEventListener('loadeddata',ready);film.removeEventListener('seeked',queue);cancelAnimationFrame(frame);film.pause();delete el.dataset.motion;delete el.dataset.progress;gsap.set([el.querySelector('.film-title'),el.querySelector('.film-annotation'),el.querySelector('.film-shade'),el.querySelector('.film-bottom')],{clearProps:'all'});film.removeAttribute('src');film.load();setMode('poster');};
       });
       dispose=()=>mm.revert();
@@ -48,7 +48,7 @@ export function CinematicHero({ locale }: { locale: Locale }) {
     const hide=()=>{if(document.hidden)film.pause();};document.addEventListener('visibilitychange',hide);
     return()=>{cancelled=true;dispose?.();cancelAnimationFrame(frame);document.removeEventListener('visibilitychange',hide);};
   },[still]);
-  const play=()=>{const film=video.current!;setMode('manual');film.src='/media/videos/p012-scrub.mp4';film.controls=true;void film.play().catch(()=>setMode('error'));};
+  const play=()=>{const film=video.current!;setMode('manual');film.src='/media/videos/p012-scrub-web.mp4';film.controls=true;void film.play().catch(()=>setMode('error'));};
   return <section id="intro" ref={root} className="film-hero" aria-label={fa?'افتتاحیه سینمایی پورتفولیو':'Cinematic portfolio introduction'}>
     <video ref={video} className="film-video" playsInline muted preload="none" poster={assets.P012[0].src} aria-label={fa?'سکانس رندر نمایشگاه تهران، کنترل با اسکرول':'Tehran exhibition rendered camera segment, controlled by scrolling'} onError={()=>setMode('error')}/>
     <div className="film-shade"/>
