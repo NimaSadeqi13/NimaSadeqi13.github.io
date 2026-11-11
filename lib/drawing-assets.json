@@ -1,0 +1,26 @@
+[
+  {
+    "id": "P020",
+    "src": "/media/p020-plan.webp",
+    "width": 2000,
+    "height": 1415
+  },
+  {
+    "id": "P021",
+    "src": "/media/p021-plan.webp",
+    "width": 2000,
+    "height": 1415
+  },
+  {
+    "id": "P037",
+    "src": "/media/p037-plan.webp",
+    "width": 1414,
+    "height": 2000
+  },
+  {
+    "id": "P038",
+    "src": "/media/p038-plan.webp",
+    "width": 2000,
+    "height": 1415
+  }
+]
