@@ -55,9 +55,9 @@ export function CinematicHero({ locale }: { locale: Locale }) {
   },[still,fa]);
   const play=()=>{const film=video.current!;setMode('manual');film.src='/media/videos/p012-scrub-web.mp4';film.controls=true;void film.play().catch(()=>setMode('error'));};
   return <section id="intro" ref={root} className="film-hero" data-playing={mode==='manual'} aria-label={fa?'افتتاحیه سینمایی پورتفولیو':'Cinematic portfolio introduction'}>
-    <link rel="preload" as="image" href={poster.src} imageSrcSet={poster.srcSet} imageSizes="100vw" fetchPriority="high"/>
+    <link rel="preload" as="image" href={poster.src} imageSrcSet={poster.srcSet} imageSizes="(max-width: 999px) 1400px, 100vw" fetchPriority="high"/>
     <video ref={video} className="film-video" playsInline muted preload="none"  aria-label={fa?'سکانس رندر نمایشگاه تهران، کنترل با اسکرول':'Tehran exhibition rendered camera segment, controlled by scrolling'} onError={()=>setMode('error')}/>
-    <ResponsiveImage className="film-poster" src={assets.P012[0].src} width={1600} height={900} sizes="100vw" eager alt=""/>
+    <ResponsiveImage className="film-poster" src={assets.P012[0].src} width={1600} height={900} sizes="(max-width: 999px) 1400px, 100vw" eager alt=""/>
     <div className="film-shade"/><div className="film-aperture" aria-hidden="true"/><div className="film-coordinate" aria-hidden="true"><span>01 — P012</span><strong>XPOINT</strong><span>TEHRAN / 1404</span></div><div className="film-progress" aria-hidden="true"><i/></div>
     <div className="film-top"><span>{ui.title[locale]}</span><span dir="ltr">P012 / TEHRAN / 1404</span></div>
     <div className="film-title"><p>{ui.name[locale]}</p><h1>{fa?<>از کانسپت<br/>تا طراحی<br/><em>قابل اجرا.</em></>:<>From concept<br/>to <em>buildable</em><br/>design.</>}</h1></div>
