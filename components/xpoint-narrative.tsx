@@ -29,9 +29,11 @@ export function XPointNarrative({ locale }: { locale: Locale }) {
             .fromTo(chapter, { clipPath: i % 2 ? 'inset(0 100% 0 0)' : 'inset(100% 0 0 0)' }, { clipPath: 'inset(0 0 0 0)', duration: 0.8 })
             .fromTo(chapter.querySelector('.media-slot'), { scale: 1.18, xPercent: i % 2 ? 6 : -6 }, { scale: 1, xPercent: 0, duration: 1 }, '<')
             .fromTo(chapter.querySelector('.story-copy'), { y: 85 }, { y: 0, duration: 0.8 }, '<')
+            .fromTo(chapter.querySelectorAll('.story-copy h3,.story-copy > p:not(.eyebrow)'), {xPercent:i%2?-12:12,opacity:.25}, {xPercent:0,opacity:1,stagger:.08,duration:.65}, '<')
+            .fromTo(chapter.querySelectorAll('.system-components li,.branch-grid article'), {y:100,rotation:2,opacity:0}, {y:0,rotation:0,opacity:1,stagger:.12,duration:.65}, '<')
             .set(chapters[i-1], { visibility: 'hidden' });
         });
-        controller.current = { go: index => { const st = timeline.scrollTrigger!; window.scrollTo({top:st.start + (st.end-st.start)*((index+.9)/5),behavior:'instant'}); }, skip: () => { timeline.scrollTrigger?.kill(true); timeline.kill(); chapters.forEach(chapter => {chapter.inert=false;}); gsap.set(chapters,{clearProps:'all'}); gsap.set(viewport.querySelectorAll('.story-copy,.media-slot'),{clearProps:'transform,opacity,visibility,clipPath'}); delete viewport.dataset.interactive; delete viewport.dataset.stage; controller.current=null; requestAnimationFrame(()=>document.getElementById('xpoint-story-end')?.scrollIntoView({block:'start',behavior:'instant'})); } };
+        controller.current = { go: index => { const st = timeline.scrollTrigger!; window.scrollTo({top:st.start + (st.end-st.start)*((index+.9)/5),behavior:'instant'}); }, skip: () => { timeline.scrollTrigger?.kill(true); timeline.kill(); chapters.forEach(chapter => {chapter.inert=false;}); gsap.set(chapters,{clearProps:'all'}); gsap.set(viewport.querySelectorAll('.story-copy,.media-slot,.story-copy h3,.story-copy > p,.system-components li,.branch-grid article'),{clearProps:'transform,opacity,visibility,clipPath'}); delete viewport.dataset.interactive; delete viewport.dataset.stage; controller.current=null; requestAnimationFrame(()=>document.getElementById('xpoint-story-end')?.scrollIntoView({block:'start',behavior:'instant'})); } };
         return () => { controller.current = null; chapters.forEach(chapter => { chapter.inert = false; }); delete viewport.dataset.interactive; delete viewport.dataset.stage; };
       }, root);
       dispose = () => mm.revert();
