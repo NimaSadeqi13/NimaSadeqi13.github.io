@@ -31,9 +31,9 @@ function useMotion() {
         gsap.utils.toArray<HTMLElement>('.project-card,.flagship-grid', ref.current!).forEach(card => {
           const media = card.querySelector('.media-slot');
           if (!media) return;
-          gsap.fromTo(media, {clipPath:'inset(12% 5% 12% 5%)'}, {clipPath:'inset(0% 0% 0% 0%)',ease:'none',scrollTrigger:{trigger:card,start:'top 95%',end:'top 28%',scrub:1}});
+          gsap.fromTo(media, {clipPath:'inset(12% 5% 12% 5%)'}, {clipPath:'inset(0% 0% 0% 0%)',ease:'none',scrollTrigger:{trigger:card,start:'top 95%',end:'top 28%',scrub:.18}});
           const caption=card.querySelector('.project-caption,.flagship-copy');
-          if(caption) gsap.fromTo(caption,{y:55},{y:0,ease:'none',scrollTrigger:{trigger:card,start:'top 85%',end:'top 20%',scrub:.8}});
+          if(caption) gsap.fromTo(caption,{y:55},{y:0,ease:'none',scrollTrigger:{trigger:card,start:'top 85%',end:'top 20%',scrub:.18}});
         });
         gsap.utils.toArray<HTMLElement>('.metric strong',ref.current!).forEach((el,i)=>gsap.from(el,{yPercent:70,rotation:i%2?4:-4,scale:.7,duration:1.1,ease:'expo.out',scrollTrigger:{trigger:el,start:'top 92%',once:true}}));
       }, ref);
