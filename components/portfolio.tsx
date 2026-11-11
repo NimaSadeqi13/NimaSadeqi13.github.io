@@ -4,7 +4,7 @@ import { Profile } from './profile';
 import { ProjectVideos } from './project-videos';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { ResponsiveImage as Image } from './responsive-image';
 import { useEffect, useRef, useState } from 'react';
 import type { Locale, Media, Project } from '@/lib/content';
 import { experience, projects, featuredProjects, tools, ui } from '@/lib/content';
@@ -16,7 +16,7 @@ function useMotion() {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let dispose: (() => void) | undefined; let cancelled = false;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(min-width: 1000px) and (prefers-reduced-motion: no-preference)').matches) return;
     Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).then(([{ gsap }, { ScrollTrigger }]) => {
       if (cancelled || !ref.current) return;
       gsap.registerPlugin(ScrollTrigger);
@@ -51,12 +51,12 @@ export function Navigation({ locale, slug }: { locale: Locale; slug?: string }) 
   return <>
     <a className="skip-link" href="#main">{locale === 'en' ? 'Skip to content' : 'رفتن به محتوا'}</a>
     <header className="header">
-      <Link className="wordmark" href={base} aria-label={ui.name[locale]}><span dir="ltr">NS<span className="wordmark-dot">.</span></span><span>{ui.name[locale]}</span></Link>
+      <Link prefetch={false} className="wordmark" href={base} aria-label={ui.name[locale]}><span dir="ltr">NS<span className="wordmark-dot">.</span></span><span>{ui.name[locale]}</span></Link>
       <button className="menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? (locale === 'en' ? 'Close' : 'بستن') : (locale === 'en' ? 'Menu' : 'فهرست')}</button>
       <nav id="primary-navigation" className={open ? 'nav is-open' : 'nav'} aria-label={locale === 'en' ? 'Main navigation' : 'فهرست اصلی'}>
-        {(['work', 'experience', 'about', 'contact'] as const).map(id => <Link key={id} href={`${base}#${id}`} onClick={() => setOpen(false)}>{ui[id][locale]}</Link>)}
+        {(['work', 'experience', 'about', 'contact'] as const).map(id => <Link prefetch={false} key={id} href={`${base}#${id}`} onClick={() => setOpen(false)}>{ui[id][locale]}</Link>)}
       </nav>
-      <Link className="language" href={`/${other}${slug ? `/projects/${slug}` : ''}`} hrefLang={other} lang={other} aria-label={locale === 'en' ? 'Switch to Persian' : 'Switch to English'}>{locale === 'en' ? 'فا' : 'EN'}<span aria-hidden="true"> ↗</span></Link>
+      <Link prefetch={false} className="language" href={`/${other}${slug ? `/projects/${slug}` : ''}`} hrefLang={other} lang={other} aria-label={locale === 'en' ? 'Switch to Persian' : 'Switch to English'}>{locale === 'en' ? 'فا' : 'EN'}<span aria-hidden="true"> ↗</span></Link>
     </header>
   </>;
 }
@@ -80,16 +80,16 @@ export function ProjectGallery({ locale }: { locale: Locale }) {
   const visible = featuredProjects.filter(p => filter === 'all' || p.category === filter);
   return <section id="work" className="section work-section">
     <div className="section-intro" data-reveal><p className="eyebrow">{locale === 'en' ? 'Selected architecture' : 'گزیده معماری'}</p><div className="heading-row"><h2>{locale === 'en' ? 'Selected work' : 'پروژه‌های منتخب'}</h2><p>{locale === 'en' ? 'Retail spaces, exhibition environments and the elements that bring them together.' : 'فضاهای فروشگاهی و نمایشگاهی، و جزئیاتی که آن‌ها را به یکدیگر پیوند می‌دهد.'}</p></div></div>
-    <nav className="project-index" aria-label={locale === 'en' ? 'Quick project navigation' : 'دسترسی سریع پروژه‌ها'}>{featuredProjects.map(p => <Link key={p.id} href={`/${locale}/projects/${p.slug}`}><bdi>{p.id}</bdi> {p.shortTitle}</Link>)}</nav><div className="filters" role="group" aria-label={locale === 'en' ? 'Filter projects' : 'فیلتر پروژه‌ها'}>{(Object.keys(ui.categories) as Array<keyof typeof ui.categories>).filter(c => c !== 'elements').map(c => <button key={c} aria-pressed={filter === c} onClick={() => setFilter(c)}>{ui.categories[c][locale]}</button>)}</div>
+    <nav className="project-index" aria-label={locale === 'en' ? 'Quick project navigation' : 'دسترسی سریع پروژه‌ها'}>{featuredProjects.map(p => <Link prefetch={false} key={p.id} href={`/${locale}/projects/${p.slug}`}><bdi>{p.id}</bdi> {p.shortTitle}</Link>)}</nav><div className="filters" role="group" aria-label={locale === 'en' ? 'Filter projects' : 'فیلتر پروژه‌ها'}>{(Object.keys(ui.categories) as Array<keyof typeof ui.categories>).filter(c => c !== 'elements').map(c => <button key={c} aria-pressed={filter === c} onClick={() => setFilter(c)}>{ui.categories[c][locale]}</button>)}</div>
     <p className="visually-hidden" role="status" aria-live="polite">{visible.length} {locale === 'en' ? 'project collections shown' : 'مجموعه نمایش داده می‌شود'}</p>
-    <div className="project-grid">{visible.map(p => <article key={p.slug} className={`project-card card-${p.slug}`}><Link className="project-link" href={`/${locale}/projects/${p.slug}`}><MediaSlot locale={locale} media={p.media[0]} variant={p.slug === 'xpoint' ? 'system' : p.slug === 'xvision-shop' ? 'facade' : p.category === 'elements' ? 'objects' : 'space'}/><div className="project-caption"><div><span className="eyebrow"><bdi>{p.id}</bdi> / {ui.categories[p.category][locale]}</span><h3><bdi>{p.shortTitle}</bdi><span aria-hidden="true"> ↗</span></h3><p>{p.title[locale]}</p></div><span className="project-year">{p.statusNote?.[locale]}</span></div></Link></article>)}</div>
+    <div className="project-grid">{visible.map(p => <article key={p.slug} className={`project-card card-${p.slug}`}><Link prefetch={false} className="project-link" href={`/${locale}/projects/${p.slug}`}><MediaSlot locale={locale} media={p.media[0]} variant={p.slug === 'xpoint' ? 'system' : p.slug === 'xvision-shop' ? 'facade' : p.category === 'elements' ? 'objects' : 'space'}/><div className="project-caption"><div><span className="eyebrow"><bdi>{p.id}</bdi> / {ui.categories[p.category][locale]}</span><h3><bdi>{p.shortTitle}</bdi><span aria-hidden="true"> ↗</span></h3><p>{p.title[locale]}</p></div><span className="project-year">{p.statusNote?.[locale]}</span></div></Link></article>)}</div>
   </section>;
 }
 
 function Flagship({ project: p, locale, dark = false }: { project: Project; locale: Locale; dark?: boolean }) {
   return <section id={p.slug} className={`section flagship ${dark ? 'dark-section' : ''}`}>
     <div className="flagship-top" data-reveal><p className="eyebrow">{locale === 'en' ? 'Featured practice / Retail architecture' : 'رویکرد شاخص / معماری فروشگاهی'}</p><h2 dir="ltr">{p.shortTitle}</h2><p className="flagship-subtitle">{p.title[locale]}</p></div>
-    <div className="flagship-grid"><MediaSlot locale={locale} media={p.media[0]} variant={dark ? 'system' : 'facade'} large/><div className="flagship-copy" data-reveal><h3>{p.subtitle[locale]}</h3><p>{p.description[locale]}</p><p className="credit">{p.credit[locale]}</p><Link className="text-link" href={`/${locale}/projects/${p.slug}`}>{ui.story[locale]} <span aria-hidden="true">↗</span></Link></div></div>
+    <div className="flagship-grid"><MediaSlot locale={locale} media={p.media[0]} variant={dark ? 'system' : 'facade'} large/><div className="flagship-copy" data-reveal><h3>{p.subtitle[locale]}</h3><p>{p.description[locale]}</p><p className="credit">{p.credit[locale]}</p><Link prefetch={false} className="text-link" href={`/${locale}/projects/${p.slug}`}>{ui.story[locale]} <span aria-hidden="true">↗</span></Link></div></div>
     <BranchComparison locale={locale} brand={p.slug}/><div className="scope-list">{p.roles.map(r => <span key={r.en}>{r[locale]}</span>)}</div>
   </section>;
 }
@@ -125,5 +125,5 @@ export function Home({ locale }: { locale: Locale }) {
 
 export function ProjectDetail({ project: p, locale }: { project: Project; locale: Locale }) {
   const ref = useMotion(); const fa = locale === 'fa';
-  return <div ref={ref} id="top"><Navigation locale={locale} slug={p.slug}/><main id="main" className="project-detail"><section className="section detail-intro"><Link className="text-link" href={`/${locale}#work`}>{ui.back[locale]} <span aria-hidden="true">↗</span></Link><p className="eyebrow">{ui.categories[p.category][locale]}</p><h1><bdi>{p.shortTitle}</bdi></h1><h2>{p.title[locale]}</h2><p className="detail-lead">{p.subtitle[locale]}</p><p className="project-status"><bdi>{p.id}</bdi> {p.statusNote?.[locale]}</p></section><section className="detail-media"><MediaSlot media={p.media[0]} locale={locale} variant={p.slug === 'xpoint' ? 'system' : p.slug === 'xvision-shop' ? 'facade' : 'objects'} large/></section><section className="section detail-story"><div><p className="eyebrow">{fa ? 'مسئله طراحی' : 'The challenge'}</p><h2>{p.challenge[locale]}</h2></div><div><p className="bio">{p.description[locale]}</p><h3>{fa ? 'مسئولیت من' : 'My responsibilities'}</h3><ul className="detail-roles">{p.roles.map(r => <li key={r.en}>{r[locale]}</li>)}</ul><p className="outcome">{p.outcome[locale]}</p><p className="credit">{p.credit[locale]}</p></div></section>{(p.slug === 'xpoint' || p.slug === 'xvision-shop') && <section className="section"><BranchComparison locale={locale} brand={p.slug}/></section>}<section className="section documentation"><p className="eyebrow">{fa ? 'از طراحی تا اجرا' : 'From design to implementation'}</p><div className="documentation-grid">{p.media.slice(1).map(m => <ZoomMedia key={m.src || m.kind} media={m} locale={locale}/>)}</div></section><ProjectVideos slug={p.slug} locale={locale}/><section className="section next-project"><Link href={`/${locale}/projects/${projects[(projects.findIndex(x => x.slug === p.slug) + 1) % projects.length].slug}`}><span className="eyebrow">{fa ? 'مطالعه بعدی' : 'Next collection'}</span><h2><bdi>{projects[(projects.findIndex(x => x.slug === p.slug) + 1) % projects.length].shortTitle}</bdi> ↗</h2></Link></section></main><Footer locale={locale}/></div>;
+  return <div ref={ref} id="top"><Navigation locale={locale} slug={p.slug}/><main id="main" className="project-detail"><section className="section detail-intro"><Link prefetch={false} className="text-link" href={`/${locale}#work`}>{ui.back[locale]} <span aria-hidden="true">↗</span></Link><p className="eyebrow">{ui.categories[p.category][locale]}</p><h1><bdi>{p.shortTitle}</bdi></h1><h2>{p.title[locale]}</h2><p className="detail-lead">{p.subtitle[locale]}</p><p className="project-status"><bdi>{p.id}</bdi> {p.statusNote?.[locale]}</p></section><section className="detail-media"><MediaSlot media={p.media[0]} locale={locale} variant={p.slug === 'xpoint' ? 'system' : p.slug === 'xvision-shop' ? 'facade' : 'objects'} large/></section><section className="section detail-story"><div><p className="eyebrow">{fa ? 'مسئله طراحی' : 'The challenge'}</p><h2>{p.challenge[locale]}</h2></div><div><p className="bio">{p.description[locale]}</p><h3>{fa ? 'مسئولیت من' : 'My responsibilities'}</h3><ul className="detail-roles">{p.roles.map(r => <li key={r.en}>{r[locale]}</li>)}</ul><p className="outcome">{p.outcome[locale]}</p><p className="credit">{p.credit[locale]}</p></div></section>{(p.slug === 'xpoint' || p.slug === 'xvision-shop') && <section className="section"><BranchComparison locale={locale} brand={p.slug}/></section>}<section className="section documentation"><p className="eyebrow">{fa ? 'از طراحی تا اجرا' : 'From design to implementation'}</p><div className="documentation-grid">{p.media.slice(1).map(m => <ZoomMedia key={m.src || m.kind} media={m} locale={locale}/>)}</div></section><ProjectVideos slug={p.slug} locale={locale}/><section className="section next-project"><Link prefetch={false} href={`/${locale}/projects/${projects[(projects.findIndex(x => x.slug === p.slug) + 1) % projects.length].slug}`}><span className="eyebrow">{fa ? 'مطالعه بعدی' : 'Next collection'}</span><h2><bdi>{projects[(projects.findIndex(x => x.slug === p.slug) + 1) % projects.length].shortTitle}</bdi> ↗</h2></Link></section></main><Footer locale={locale}/></div>;
 }

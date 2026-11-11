@@ -11,6 +11,7 @@ export function XPointNarrative({ locale }: { locale: Locale }) {
   const root = useRef<HTMLDivElement>(null);
   const controller = useRef<{ go: (index: number) => void; skip: () => void } | null>(null);
   useEffect(() => {
+    if (!window.matchMedia('(min-width: 1000px) and (prefers-reduced-motion: no-preference)').matches) return;
     let cancelled = false, dispose: (() => void) | undefined;
     Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).then(([{ gsap }, { ScrollTrigger }]) => {
       if (cancelled || !root.current) return;
@@ -22,7 +23,7 @@ export function XPointNarrative({ locale }: { locale: Locale }) {
         viewport.dataset.interactive = 'true';
         chapters.forEach((chapter,i) => gsap.set(chapter,{zIndex:i+1}));
         gsap.set(chapters.slice(1), { clipPath: 'inset(0 0 100% 0)', visibility: 'hidden' });
-        const timeline = gsap.timeline({ scrollTrigger: { trigger: viewport, start: 'top top+=100', end: '+=4600', pin: true, scrub: 0.6, anticipatePin: 1, onUpdate: self => { const active = Math.min(4,Math.floor(self.progress * 5)); viewport.dataset.stage = String(active); chapters.forEach((chapter,i) => { chapter.inert = i !== active; }); root.current?.querySelectorAll('.story-index a,.story-stage-nav a').forEach((a,i) => { if (i % 5 === active) a.setAttribute('aria-current','step'); else a.removeAttribute('aria-current'); }); } } });
+        const timeline = gsap.timeline({ scrollTrigger: { trigger: viewport, start: 'top top+=100', end: '+=2800', pin: true, scrub: 0.12, anticipatePin: 1, onUpdate: self => { const active = Math.min(4,Math.floor(self.progress * 5)); viewport.dataset.stage = String(active); chapters.forEach((chapter,i) => { chapter.inert = i !== active; }); root.current?.querySelectorAll('.story-index a,.story-stage-nav a').forEach((a,i) => { if (i % 5 === active) a.setAttribute('aria-current','step'); else a.removeAttribute('aria-current'); }); } } });
         chapters.forEach((chapter, i) => {
           if (!i) { timeline.to(chapter.querySelector('.media-slot'), { scale: 1.04, duration: 1 }); return; }
           timeline.set(chapter, { visibility: 'visible' })
@@ -69,8 +70,8 @@ export function XPointNarrative({ locale }: { locale: Locale }) {
       <div className="story-copy" data-reveal><p className="eyebrow" dir="ltr">0{i+1} / XPOINT</p><h3 id={`xpoint-title-${s.id}`}>{fa ? s.fa : s.en}</h3><p>{s.text}</p></div>
       <div data-reveal><MediaSlot media={s.media} locale={locale}/><p className="credit">{s.note}</p></div>
       {s.id === 'design-system' && <ul className="system-components">{(fa ? ['جانمایی و حرکت','نمایش محصول و استند','متریال و نور','تابلو و جزئیات اجرایی'] : ['Planning & circulation','Product displays & fixtures','Materials & lighting','Signage & buildable details']).map(label => <li key={label}>{label}</li>)}</ul>}
-      {s.id === 'store-adaptation' && <div className="branch-grid">{[tabriz,langarud].map(p => <article key={p.id}><Link href={`/${locale}/projects/${p.slug}`}><h3><bdi>{p.id} / {p.shortTitle}</bdi> ↗</h3></Link><ZoomMedia media={p.media.find(m => m.kind === 'drawing')!} locale={locale}/><p className="credit">{p.statusNote?.[locale]}</p></article>)}</div>}
-      {s.id === 'built-results' && <><Link className="text-link" href={`/${locale}/projects/xpoint-noor`}>{fa ? 'اجرای نور' : 'Noor built store'} ↗</Link><Link className="text-link" href={`/${locale}/projects/xpoint-isfahan`}>{fa ? 'اجرای اصفهان / P017' : 'Isfahan built store / P017'} ↗</Link></>}{s.id === 'built-results' && <Link className="text-link" href={`/${locale}/projects/xpoint-kazerun`}>{fa ? 'عکس‌های اجرای کازرون / P024' : 'Kazerun built photographs / P024'} ↗</Link>}{s.id === 'built-results' && <Link className="text-link" href={`/${locale}/projects/${exhibition.slug}`}>{fa ? 'مستندات نمایشگاه تهران' : 'Explore the Tehran exhibition'} ↗</Link>}
+      {s.id === 'store-adaptation' && <div className="branch-grid">{[tabriz,langarud].map(p => <article key={p.id}><Link prefetch={false} href={`/${locale}/projects/${p.slug}`}><h3><bdi>{p.id} / {p.shortTitle}</bdi> ↗</h3></Link><ZoomMedia media={p.media.find(m => m.kind === 'drawing')!} locale={locale}/><p className="credit">{p.statusNote?.[locale]}</p></article>)}</div>}
+      {s.id === 'built-results' && <><Link prefetch={false} className="text-link" href={`/${locale}/projects/xpoint-noor`}>{fa ? 'اجرای نور' : 'Noor built store'} ↗</Link><Link prefetch={false} className="text-link" href={`/${locale}/projects/xpoint-isfahan`}>{fa ? 'اجرای اصفهان / P017' : 'Isfahan built store / P017'} ↗</Link></>}{s.id === 'built-results' && <Link prefetch={false} className="text-link" href={`/${locale}/projects/xpoint-kazerun`}>{fa ? 'عکس‌های اجرای کازرون / P024' : 'Kazerun built photographs / P024'} ↗</Link>}{s.id === 'built-results' && <Link prefetch={false} className="text-link" href={`/${locale}/projects/${exhibition.slug}`}>{fa ? 'مستندات نمایشگاه تهران' : 'Explore the Tehran exhibition'} ↗</Link>}
     </section>)}</div><span id="xpoint-story-end"/>
   </div>;
 }

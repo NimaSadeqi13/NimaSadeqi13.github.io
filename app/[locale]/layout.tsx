@@ -10,5 +10,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params; if (!isLocale(locale)) notFound();
-  return <html lang={locale} dir={locale === 'fa' ? 'rtl' : 'ltr'}><body>{children}</body></html>;
+  return <html lang={locale} dir={locale === 'fa' ? 'rtl' : 'ltr'}><head><link rel="icon" href="/favicon.svg" type="image/svg+xml"/><link rel="preload" as="font" type="font/woff2" href={locale==='fa'?'/fonts/Dana-Regular.woff2':'/fonts/Montserrat-Regular.woff2'} crossOrigin="anonymous"/></head><body>{children}</body></html>;
 }

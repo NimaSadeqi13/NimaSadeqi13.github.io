@@ -26,17 +26,17 @@
   {
     "id": "P066",
     "kind": "site",
-    "src": "/media/videos/p066-site-2.mp4",
-    "width": 640,
-    "height": 1138,
+    "src": "/media/videos/p066-site-2-web.mp4",
+    "width": 720,
+    "height": 1280,
     "poster": "/media/p066-site-video-2.webp"
   },
   {
     "id": "P066",
     "kind": "site",
-    "src": "/media/videos/p066-site-3.mp4",
-    "width": 640,
-    "height": 1138,
+    "src": "/media/videos/p066-site-3-web.mp4",
+    "width": 720,
+    "height": 1280,
     "poster": "/media/p066-site-video-3.webp"
   },
   {

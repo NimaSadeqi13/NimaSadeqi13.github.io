@@ -1,6 +1,6 @@
 'use client';
 import { useRef } from 'react';
-import Image from 'next/image';
+import { ResponsiveImage as Image } from './responsive-image';
 import type { Locale, Media } from '@/lib/content';
 import { ui } from '@/lib/content';
 export function ZoomMedia({ media, locale }: { media: Media; locale: Locale }) {

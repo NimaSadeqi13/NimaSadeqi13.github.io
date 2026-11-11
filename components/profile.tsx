@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { ResponsiveImage as Image } from './responsive-image';
 import type { Locale } from '@/lib/content';
 import { ui } from '@/lib/content';
 import assets from '@/lib/media-assets.json';
