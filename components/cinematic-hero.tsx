@@ -22,12 +22,13 @@ export function CinematicHero({ locale }: { locale: Locale }) {
       mm.add('(min-width: 900px) and (prefers-reduced-motion: no-preference)',()=>{
         if (cancelled) return;
         setMode('loading');
-        const playhead={time:0};
+        const playhead={time:0}; const request = new AbortController(); let objectUrl: string | undefined;
         let timeline: ReturnType<typeof gsap.timeline> | undefined;
         const seek=()=>{frame=0;if(cancelled||film.seeking||film.readyState<2)return;const target=Math.min(playhead.time,Math.max(0,film.duration-.05));if(Math.abs(film.currentTime-target)>.025)film.currentTime=target;};
         const queue=()=>{if(!frame)frame=requestAnimationFrame(seek);};
         const ready=()=>{
           if(cancelled||timeline||!Number.isFinite(film.duration))return;
+          if(el.getBoundingClientRect().bottom < 100){setMode('poster');return;}
           film.pause();setMode('scrub');el.dataset.motion='scrub';
           timeline=gsap.timeline({scrollTrigger:{trigger:el,start:'top top+=88',end:'+=2200',pin:true,scrub:.35,invalidateOnRefresh:true,onUpdate:self=>{el.dataset.progress=self.progress.toFixed(3);}}});
           timeline.to(playhead,{time:film.duration-.05,duration:1,ease:'none',onUpdate:queue},0)
@@ -39,8 +40,8 @@ export function CinematicHero({ locale }: { locale: Locale }) {
           ScrollTrigger.refresh();queue();
         };
         film.addEventListener('loadeddata',ready);film.addEventListener('seeked',queue);
-        film.src='/media/videos/p012-scrub.mp4';film.preload='auto';film.load();
-        return ()=>{timeline?.scrollTrigger?.kill();timeline?.kill();film.removeEventListener('loadeddata',ready);film.removeEventListener('seeked',queue);cancelAnimationFrame(frame);film.pause();delete el.dataset.motion;delete el.dataset.progress;gsap.set([el.querySelector('.film-title'),el.querySelector('.film-annotation'),el.querySelector('.film-shade'),el.querySelector('.film-bottom')],{clearProps:'all'});film.removeAttribute('src');film.load();setMode('poster');};
+        fetch('/media/videos/p012-scrub.mp4',{signal:request.signal}).then(response=>{if(!response.ok)throw new Error('Film unavailable');return response.blob();}).then(blob=>{if(cancelled||request.signal.aborted)return;objectUrl=URL.createObjectURL(blob);film.src=objectUrl;film.preload='auto';film.load();}).catch(()=>{if(!cancelled&&!request.signal.aborted)setMode('error');});
+        return ()=>{request.abort();if(objectUrl)URL.revokeObjectURL(objectUrl);timeline?.scrollTrigger?.kill();timeline?.kill();film.removeEventListener('loadeddata',ready);film.removeEventListener('seeked',queue);cancelAnimationFrame(frame);film.pause();delete el.dataset.motion;delete el.dataset.progress;gsap.set([el.querySelector('.film-title'),el.querySelector('.film-annotation'),el.querySelector('.film-shade'),el.querySelector('.film-bottom')],{clearProps:'all'});film.removeAttribute('src');film.load();setMode('poster');};
       });
       dispose=()=>mm.revert();
     }).catch(()=>setMode('error'));
