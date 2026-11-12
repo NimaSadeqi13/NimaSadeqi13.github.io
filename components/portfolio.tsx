@@ -1,18 +1,20 @@
 'use client';
 import { ZoomMedia } from './zoom-media';
 import { Profile } from './profile';
+import { SoftwareSkills } from './software-skills';
+import { ArtDirectionProvider, useArtDirectedMedia } from './art-direction';
 import { ProjectVideos } from './project-videos';
 
 import Link from 'next/link';
 import { ResponsiveImage as Image } from './responsive-image';
 import { useEffect, useRef, useState } from 'react';
 import type { Locale, Media, Project } from '@/lib/content';
-import { experience, projects, featuredProjects, tools, ui } from '@/lib/content';
+import { experience, projects, featuredProjects, ui } from '@/lib/content';
 
 import { CinematicHero } from './cinematic-hero';
 import { BranchComparison } from './branch-comparison';
 
-function useMotion() {
+function useMotion(galleryKey?: string) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let dispose: (() => void) | undefined; let cancelled = false;
@@ -28,7 +30,7 @@ function useMotion() {
       }, ref);
       const mm = gsap.matchMedia();
       mm.add('(min-width: 1000px) and (prefers-reduced-motion: no-preference)', () => {
-        gsap.utils.toArray<HTMLElement>('.project-card,.flagship-grid', ref.current!).forEach(card => {
+        gsap.utils.toArray<HTMLElement>(galleryKey===undefined?'.flagship-grid':'.project-card', ref.current!).forEach(card => {
           const media = card.querySelector('.media-slot');
           if (!media) return;
           gsap.fromTo(media, {clipPath:'inset(12% 5% 12% 5%)'}, {clipPath:'inset(0% 0% 0% 0%)',ease:'none',scrollTrigger:{trigger:card,start:'top 95%',end:'top 28%',scrub:.18}});
@@ -37,28 +39,21 @@ function useMotion() {
         });
         gsap.utils.toArray<HTMLElement>('.metric strong',ref.current!).forEach((el,i)=>gsap.from(el,{yPercent:70,rotation:i%2?4:-4,scale:.7,duration:1.1,ease:'expo.out',scrollTrigger:{trigger:el,start:'top 92%',once:true}}));
       }, ref);
+      document.fonts.ready.then(()=>{if(!cancelled){ScrollTrigger.sort();ScrollTrigger.refresh();}});
       dispose = () => { mm.revert(); ctx.revert(); };
     }).catch(() => { /* Static reading remains available. */ });
     return () => { cancelled = true; dispose?.(); };
-  }, []);
+  }, [galleryKey]);
   return ref;
 }
 
 export function Navigation({ locale, slug }: { locale: Locale; slug?: string }) {
-  const [open, setOpen] = useState(false);
-  const other = locale === 'en' ? 'fa' : 'en';
-  const base = `/${locale}`;
-  return <>
-    <a className="skip-link" href="#main">{locale === 'en' ? 'Skip to content' : 'رفتن به محتوا'}</a>
-    <header className="header">
-      <Link prefetch={false} className="wordmark" href={base} aria-label={ui.name[locale]}><span dir="ltr">NS<span className="wordmark-dot">.</span></span><span>{ui.name[locale]}</span></Link>
-      <button className="menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? (locale === 'en' ? 'Close' : 'بستن') : (locale === 'en' ? 'Menu' : 'فهرست')}</button>
-      <nav id="primary-navigation" className={open ? 'nav is-open' : 'nav'} aria-label={locale === 'en' ? 'Main navigation' : 'فهرست اصلی'}>
-        {(['work', 'experience', 'about', 'contact'] as const).map(id => <Link prefetch={false} key={id} href={`${base}#${id}`} onClick={() => setOpen(false)}>{ui[id][locale]}</Link>)}
-      </nav>
-      <Link prefetch={false} className="language" href={`/${other}${slug ? `/projects/${slug}` : ''}`} hrefLang={other} lang={other} aria-label={locale === 'en' ? 'Switch to Persian' : 'Switch to English'}>{locale === 'en' ? 'فا' : 'EN'}<span aria-hidden="true"> ↗</span></Link>
-    </header>
-  </>;
+  const [open,setOpen]=useState(false),[active,setActive]=useState('intro');
+  const fa=locale==='fa',other=fa?'en':'fa',base='/'+locale+'/';
+  const sections=[{id:'about',label:fa?'معرفی':'About'},{id:'work',label:fa?'پروژه‌ها':'Projects'},{id:'xpoint',label:'XPoint'},{id:'xvision-shop',label:'X.Vision'},{id:'experience',label:fa?'تجربه':'Experience'},{id:'skills',label:fa?'مهارت‌ها':'Skills'},{id:'contact',label:fa?'تماس':'Contact'}];
+  useEffect(()=>{if(slug)return;const intersecting=new Map<string,Element>();const observer=new IntersectionObserver(entries=>{for(const e of entries){if(e.isIntersecting)intersecting.set(e.target.id,e.target);else intersecting.delete(e.target.id);}const ordered=[...intersecting.values()].sort((a,b)=>b.getBoundingClientRect().top-a.getBoundingClientRect().top);if(ordered[0])setActive(ordered[0].id);},{rootMargin:'-100px 0px -55% 0px',threshold:0});for(const id of ['intro','about','work','xpoint','xvision-shop','experience','skills','contact']){const el=document.getElementById(id);if(el)observer.observe(el);}return()=>observer.disconnect();},[locale,slug]);
+  useEffect(()=>{const close=(e:KeyboardEvent)=>{if(e.key==='Escape')setOpen(false)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[]);
+  return <><a className="skip-link" href="#main">{fa?'رفتن به محتوا':'Skip to content'}</a><header className="header"><Link prefetch={false} className="wordmark" href={base} aria-label={ui.name[locale]}><span dir="ltr">NS<span className="wordmark-dot">.</span></span><span>{ui.name[locale]}</span></Link><button className="menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded={open} onClick={()=>setOpen(!open)}>{open?(fa?'بستن':'Close'):(fa?'فهرست':'Menu')}</button><nav id="primary-navigation" className={open?'nav is-open':'nav'} aria-label={fa?'بخش‌های پورتفولیو':'Portfolio sections'}>{sections.map(s=><Link prefetch={false} key={s.id} href={base+'#'+s.id} aria-current={!slug&&active===s.id?'location':undefined} onClick={event=>{setOpen(false);const el=!slug&&document.getElementById(s.id);if(el){event.preventDefault();setActive(s.id);window.scrollTo({top:el.getBoundingClientRect().top+scrollY-(document.querySelector('.header')!.getBoundingClientRect().bottom+16),behavior:'instant'});el.setAttribute('tabindex','-1');el.focus({preventScroll:true});}}}>{s.label}</Link>)}</nav><Link prefetch={false} className="language" href={'/'+other+(slug?'/projects/'+slug+'/':'/')} hrefLang={other} lang={other} aria-label={fa?'Switch to English':'Switch to Persian'}>{fa?'EN':'فا'}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13 13 3M3 3h10v10" fill="none" stroke="currentColor" strokeWidth="1.3"/></svg></Link></header></>;
 }
 
 export function SpatialStudy({ variant = 'space' }: { variant?: 'space' | 'system' | 'facade' | 'objects' }) {
@@ -69,6 +64,7 @@ export function SpatialStudy({ variant = 'space' }: { variant?: 'space' | 'syste
 }
 
 export function MediaSlot({ media, locale, variant = 'space', large = false }: { media?: Media; locale: Locale; variant?: 'space' | 'system' | 'facade' | 'objects'; large?: boolean }) {
+  media=useArtDirectedMedia(media);
   return <figure className={`media-slot ${large ? 'large' : ''}`}>
     {media?.src ? <Image src={media.src} width={media.width} height={media.height} alt={media.alt[locale]} sizes="(max-width: 760px) 100vw, 70vw" style={{ objectPosition: media.focalPoint || 'center', aspectRatio: `${media.width} / ${media.height}` }} /> : <><SpatialStudy variant={variant}/><span className="slot-note">{ui.pending[locale]}</span></>}
     <figcaption><span>{media ? ui.kinds[media.kind][locale] : (locale === 'en' ? 'Project media' : 'رسانه پروژه')}</span></figcaption>
@@ -77,12 +73,13 @@ export function MediaSlot({ media, locale, variant = 'space', large = false }: {
 
 export function ProjectGallery({ locale }: { locale: Locale }) {
   const [filter, setFilter] = useState<keyof typeof ui.categories>('all');
+  const galleryRef=useMotion(filter);
   const visible = featuredProjects.filter(p => filter === 'all' || p.category === filter);
   return <section id="work" className="section work-section">
     <div className="section-intro" data-reveal><p className="eyebrow">{locale === 'en' ? 'Selected architecture' : 'گزیده معماری'}</p><div className="heading-row"><h2>{locale === 'en' ? 'Selected work' : 'پروژه‌های منتخب'}</h2><p>{locale === 'en' ? 'Retail spaces, exhibition environments and the elements that bring them together.' : 'فضاهای فروشگاهی و نمایشگاهی، و جزئیاتی که آن‌ها را به یکدیگر پیوند می‌دهد.'}</p></div></div>
-    <nav className="project-index" aria-label={locale === 'en' ? 'Quick project navigation' : 'دسترسی سریع پروژه‌ها'}>{featuredProjects.map(p => <Link prefetch={false} key={p.id} href={`/${locale}/projects/${p.slug}`}><bdi>{p.id}</bdi> {p.shortTitle}</Link>)}</nav><div className="filters" role="group" aria-label={locale === 'en' ? 'Filter projects' : 'فیلتر پروژه‌ها'}>{(Object.keys(ui.categories) as Array<keyof typeof ui.categories>).filter(c => c !== 'elements').map(c => <button key={c} aria-pressed={filter === c} onClick={() => setFilter(c)}>{ui.categories[c][locale]}</button>)}</div>
+    <details className="project-jump"><summary>{locale==='fa'?'فهرست سریع پروژه‌ها':'Quick project index'}</summary><nav className="project-index" aria-label={locale === 'en' ? 'Quick project navigation' : 'دسترسی سریع پروژه‌ها'}>{featuredProjects.map(p => <Link prefetch={false} key={p.id} href={`/${locale}/projects/${p.slug}`}><bdi>{p.id}</bdi> {p.shortTitle}</Link>)}</nav></details><div className="filters" role="group" aria-label={locale === 'en' ? 'Filter projects' : 'فیلتر پروژه‌ها'}>{(Object.keys(ui.categories) as Array<keyof typeof ui.categories>).filter(c => c !== 'elements').map(c => <button key={c} aria-pressed={filter === c} onClick={() => setFilter(c)}>{ui.categories[c][locale]}</button>)}</div>
     <p className="visually-hidden" role="status" aria-live="polite">{visible.length} {locale === 'en' ? 'project collections shown' : 'مجموعه نمایش داده می‌شود'}</p>
-    <div className="project-grid">{visible.map(p => <article key={p.slug} className={`project-card card-${p.slug}`}><Link prefetch={false} className="project-link" href={`/${locale}/projects/${p.slug}`}><MediaSlot locale={locale} media={p.media[0]} variant={p.slug === 'xpoint' ? 'system' : p.slug === 'xvision-shop' ? 'facade' : p.category === 'elements' ? 'objects' : 'space'}/><div className="project-caption"><div><span className="eyebrow"><bdi>{p.id}</bdi> / {ui.categories[p.category][locale]}</span><h3><bdi>{p.shortTitle}</bdi><span aria-hidden="true"> ↗</span></h3><p>{p.title[locale]}</p></div><span className="project-year">{p.statusNote?.[locale]}</span></div></Link></article>)}</div>
+    <div className="project-grid" ref={galleryRef}>{visible.map((p,index) => <article key={p.slug} data-project={p.id} className={`project-card card-${p.slug}`}><Link prefetch={false} className="project-link" href={`/${locale}/projects/${p.slug}/`} aria-label={locale==='fa'?`مشاهده پروژه: ${p.title.fa}`:`Open project: ${p.title.en}`}><MediaSlot locale={locale} media={p.media[0]} variant={p.category==='office'?'space':'facade'}/><div className="project-caption"><div className="project-meta"><span className="eyebrow"><bdi>{p.id}</bdi> / {ui.categories[p.category][locale]}</span><span className="project-year">{p.statusNote?.[locale]}</span></div><h3><bdi>{p.shortTitle}</bdi></h3><p>{p.title[locale]}</p><span className="project-open">{locale==='fa'?'مشاهده پروژه':'View project'} <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13 13 3M3 3h10v10" fill="none" stroke="currentColor" strokeWidth="1.3"/></svg></span><span className="project-sequence" aria-hidden="true">{String(index+1).padStart(2,'0')}</span></div></Link></article>)}</div>
   </section>;
 }
 
@@ -100,7 +97,7 @@ export function Footer({ locale }: { locale: Locale }) {
 
 export function Home({ locale }: { locale: Locale }) {
   const ref = useMotion(); const fa = locale === 'fa';
-  return <div ref={ref} id="top">
+  return <ArtDirectionProvider><div ref={ref} id="top">
     <Navigation locale={locale}/>
     <main id="main">
       <CinematicHero locale={locale}/>
@@ -117,10 +114,11 @@ export function Home({ locale }: { locale: Locale }) {
         ['02','Shape','شکل‌دادن','Concept, architectural identity, materials and lighting.','کانسپت، هویت معماری، متریال و نورپردازی.'],
         ['03','Resolve','تکمیل','Visualization, construction drawings and design clarifications.','رندر، نقشه‌های اجرایی و پاسخ‌گویی به مسائل طراحی.'],
       ].map(n => <article key={n[0]} data-reveal><span className="eyebrow">{n[0]}</span><h3>{fa ? n[2] : n[1]}</h3><p>{fa ? n[4] : n[3]}</p></article>)}</div></section>
-      <section id="experience" className="section experience"><div className="section-heading" data-reveal><p className="eyebrow">{fa ? 'تجربه و تخصص' : 'Experience & expertise'}</p><h2>{fa ? 'از کانسپت تا نقشه اجرایی.' : 'From the first idea to the working drawing.'}</h2></div><div className="experience-row"><div><p className="eyebrow">{fa ? '۱۴۰۱ تا اکنون' : '1401 (Solar Hijri) — Present'}</p><h3>{ui.title[locale]}</h3><p>{fa ? 'گروه مادیران' : 'Madiran Group'}</p></div><div data-reveal><p>{experience[locale]}</p><p className="credit">{fa ? 'همکاری با ناظران اجرایی برای حل مسائل طراحی؛ نه نظارت مستقیم کارگاه یا مدیریت اجرا. هویت بصری گرافیکی برندها توسط تیم‌های مربوط توسعه یافته است.' : 'Design coordination with site supervisors, rather than direct site supervision or construction management. Graphic brand identities were developed by the respective teams.'}</p></div></div><div className="tools">{tools.map(g => <div key={g.title.en}><h3>{g.title[locale]}</h3><ul>{g.items.map(i => <li key={i}><bdi>{fa && i === 'Higgsfield (familiarity)' ? 'Higgsfield (آشنایی)' : i}</bdi></li>)}</ul></div>)}</div></section>
+      <section id="experience" className="section experience"><div className="section-heading" data-reveal><p className="eyebrow">{fa ? 'سوابق حرفه‌ای' : 'Professional experience'}</p><h2>{fa ? 'از کانسپت تا نقشه اجرایی.' : 'From the first idea to the working drawing.'}</h2></div><div className="experience-row"><div><p className="eyebrow">{fa ? '۱۴۰۱ تا اکنون' : '1401 (Solar Hijri) — Present'}</p><h3>{ui.title[locale]}</h3><p>{fa ? 'گروه مادیران' : 'Madiran Group'}</p></div><div data-reveal><p>{experience[locale]}</p><p className="credit">{fa ? 'همکاری با ناظران اجرایی برای حل مسائل طراحی؛ نه نظارت مستقیم کارگاه یا مدیریت اجرا. هویت بصری گرافیکی برندها توسط تیم‌های مربوط توسعه یافته است.' : 'Design coordination with site supervisors, rather than direct site supervision or construction management. Graphic brand identities were developed by the respective teams.'}</p></div></div></section>
+      <SoftwareSkills locale={locale}/>
       <section id="contact" className="section contact dark-section"><p className="eyebrow">{fa ? 'فرصت‌های شغلی و همکاری' : 'Opportunities & collaboration'}</p><h2 data-reveal>{fa ? <>گفت‌وگو درباره<br/><em>فضای بعدی.</em></> : <>Let’s talk about<br/><em>what comes next.</em></>}</h2><div className="contact-bottom"><p>{fa ? 'برای فرصت‌های شغلی معماری و همکاری در طراحی.' : 'For architecture opportunities and design collaborations.'}</p><address className="contact-channels"><a href="tel:+989920694573"><span>{fa ? 'تلفن' : 'Phone'}</span><bdi dir="ltr">09920694573</bdi> ↗</a><a href="mailto:Nimasadeghi23@gmail.com"><span>{fa ? 'ایمیل' : 'Email'}</span><bdi dir="ltr">Nimasadeghi23@gmail.com</bdi> ↗</a><a href="https://www.linkedin.com/in/nimasadeqi/" target="_blank" rel="noopener noreferrer"><span>{fa ? 'پروفایل حرفه‌ای' : 'Professional profile'}</span><bdi dir="ltr">LinkedIn / Nima Sadeqi</bdi> ↗</a></address></div></section>
     </main><Footer locale={locale}/>
-  </div>;
+  </div></ArtDirectionProvider>;
 }
 
 export function ProjectDetail({ project: p, locale }: { project: Project; locale: Locale }) {

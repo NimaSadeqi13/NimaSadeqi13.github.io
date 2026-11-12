@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Locale } from '@/lib/content';
 import { ui } from '@/lib/content';
 import assets from '@/lib/media-assets.json';
+import treatments from '@/lib/art-directed-assets.json';
 import { ResponsiveImage, responsiveSource } from './responsive-image';
 
 export function CinematicHero({ locale }: { locale: Locale }) {
@@ -10,7 +11,8 @@ export function CinematicHero({ locale }: { locale: Locale }) {
   const [mode, setMode] = useState<'poster'|'loading'|'scrub'|'manual'|'error'>('poster');
   const [still, setStill] = useState(false);
   const fa = locale === 'fa';
-  const poster=responsiveSource(assets.P012[0].src);
+  const posterSrc=treatments['/media/p012-03.webp'].poster.src||assets.P012[0].src;
+  const poster=responsiveSource(posterSrc);
   useEffect(() => {
     const el = root.current, film = video.current;
     if (!el || !film || still) return;
@@ -32,7 +34,7 @@ export function CinematicHero({ locale }: { locale: Locale }) {
           if(cancelled||timeline||!Number.isFinite(film.duration))return;
           if(el.getBoundingClientRect().bottom < 100){setMode('poster');return;}
           film.pause();setMode('scrub');el.dataset.motion='scrub';
-          timeline=gsap.timeline({scrollTrigger:{trigger:el,start:'top top+=88',end:'+=1400',pin:true,scrub:true,invalidateOnRefresh:true,onUpdate:self=>{el.dataset.progress=self.progress.toFixed(3);el.style.setProperty('--film-progress',String(self.progress));}}});
+          timeline=gsap.timeline({scrollTrigger:{trigger:el,start:'top top+=76',end:'+=1400',pin:true,refreshPriority:20,scrub:true,invalidateOnRefresh:true,onUpdate:self=>{el.dataset.progress=self.progress.toFixed(3);el.style.setProperty('--film-progress',String(self.progress));}}});
           timeline.to(playhead,{time:film.duration-.05,duration:1,ease:'none',onUpdate:queue},0)
             .to(el.querySelector('.film-title'),{yPercent:-35,xPercent:fa?8:-8,scale:.88,clipPath:'inset(0 0 100% 0)',opacity:0,duration:.36},.06)
             .fromTo(el.querySelector('.film-aperture'),{opacity:0,scale:1.02},{opacity:1,scale:1,duration:.24,ease:'none'},.72)
@@ -42,7 +44,7 @@ export function CinematicHero({ locale }: { locale: Locale }) {
             .to(el.querySelector('.film-annotation'),{y:-30,opacity:0,duration:.15},.83)
             .to(el.querySelector('.film-shade'),{opacity:.2,duration:.4},.25)
             .to(el.querySelector('.film-bottom'),{y:-16,duration:1,ease:'none'},0);
-          ScrollTrigger.refresh();queue();
+          ScrollTrigger.sort();ScrollTrigger.refresh();queue();
         };
         film.addEventListener('loadeddata',ready);film.addEventListener('seeked',queue);
         film.src='/media/videos/p012-scrub-web.mp4';film.preload='auto';film.load();
@@ -57,7 +59,7 @@ export function CinematicHero({ locale }: { locale: Locale }) {
   return <section id="intro" ref={root} className="film-hero" data-playing={mode==='manual'} aria-label={fa?'افتتاحیه سینمایی پورتفولیو':'Cinematic portfolio introduction'}>
     <link rel="preload" as="image" href={poster.src} imageSrcSet={poster.srcSet} imageSizes="(max-width: 999px) 1400px, 100vw" fetchPriority="high"/>
     <video ref={video} className="film-video" playsInline muted preload="none"  aria-label={fa?'سکانس رندر نمایشگاه تهران، کنترل با اسکرول':'Tehran exhibition rendered camera segment, controlled by scrolling'} onError={()=>setMode('error')}/>
-    <ResponsiveImage className="film-poster" src={assets.P012[0].src} width={1600} height={900} sizes="(max-width: 999px) 1400px, 100vw" eager alt=""/>
+    <ResponsiveImage className="film-poster" src={posterSrc} width={1600} height={900} sizes="(max-width: 999px) 1400px, 100vw" eager alt=""/>
     <div className="film-shade"/><div className="film-aperture" aria-hidden="true"/><div className="film-coordinate" aria-hidden="true"><span>01 — P012</span><strong>XPOINT</strong><span>TEHRAN / 1404</span></div><div className="film-progress" aria-hidden="true"><i/></div>
     <div className="film-top"><span>{ui.title[locale]}</span><span dir="ltr">P012 / TEHRAN / 1404</span></div>
     <div className="film-title"><p>{ui.name[locale]}</p><h1>{fa?<>از کانسپت<br/>تا طراحی<br/><em>قابل اجرا.</em></>:<>From concept<br/>to <em>buildable</em><br/>design.</>}</h1></div>
